@@ -215,7 +215,7 @@ export const Proposal = (props) => {
                   <MDBBadge color="amber">Expired</MDBBadge>
                   :
                   null
-                }
+                }q
                 {props.data.status === 'Removed' ?
                   <MDBBadge color="yellow">Removed</MDBBadge>
                   :
