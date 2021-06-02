@@ -104,7 +104,6 @@ export const Proposal = (props) => {
   }
 
 
-
   useEffect(
     () => {
       if (props.data.votes && Object.keys(props.data.votes).length !== 0) {
@@ -140,6 +139,10 @@ export const Proposal = (props) => {
 
   console.log(props.data);
 
+  if (props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0].method_name === 'create_token') {
+    console.log(JSON.parse(atob(props.data.kind.FunctionCall.actions[0].args)))
+  }
+
   return (
     <>
       {props.data.kind ?
@@ -160,6 +163,7 @@ export const Proposal = (props) => {
               {props.data.kind === 'ChangeConfig' ? "Change Config: " : null}
               {props.data.kind === 'ChangePolicy' ? "Change Policy: " : null}
               {props.data.kind.AddMemberToRole && props.data.kind.AddMemberToRole.role === 'council' ? "Add " + props.data.kind.AddMemberToRole.member_id + " to the council" : null}
+              {props.data.kind.Transfer ? "Request for payout Ⓝ" + (props.data.kind.Transfer.amount / yoktoNear).toFixed(0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " to " + props.data.kind.Transfer.receiver_id : null}
               {props.data.kind === 'RemoveMemberFromRole' ? "RemoveMemberFromRole: " + props.data.target : null}
               {props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0].method_name === 'create_token' ? "Create token" : null}
               {props.data.kind === 'UpgradeSelf' ? "UpgradeSelf: " + props.data.target : null}
@@ -211,11 +215,11 @@ export const Proposal = (props) => {
                   :
                   null
                 }
-                {props.data.status === 'Expired' || (props.data.status === 'InProgress' && convertDuration(new Decimal(props.data.submission_time).plus(props.daoPolicy.proposal_period)) < new Date())?
+                {props.data.status === 'Expired' || (props.data.status === 'InProgress' && convertDuration(new Decimal(props.data.submission_time).plus(props.daoPolicy.proposal_period)) < new Date()) ?
                   <MDBBadge color="amber">Expired</MDBBadge>
                   :
                   null
-                }q
+                }
                 {props.data.status === 'Removed' ?
                   <MDBBadge color="yellow">Removed</MDBBadge>
                   :
@@ -235,17 +239,29 @@ export const Proposal = (props) => {
                      rel="nofollow">{"https://gov.near.org/t/" + props.data.description.split('/t/')[1]}</a>
                   : null}
                 <hr/>
-                <div className="float-left text-muted h4-responsive">proposer</div>
-                <MDBBox className="float-right h4-responsive" style={{width: '80%'}}>
-                  <a className="text-right float-right white-text btn-link" target="_blank"
-                     style={{wordBreak: "break-word"}}
-                     href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.proposer.toLowerCase()}>{props.data.proposer.toLowerCase()}</a>
-                </MDBBox>
+                <div className="float-left text-muted h4-responsive">
+                  {props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0].method_name === 'create_token' ? "token factory" : "proposer"}
+                </div>
+                {props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0].method_name === 'create_token' && JSON.parse(atob(props.data.kind.FunctionCall.actions[0].args)).args ?
+                  <MDBBox className="float-right h4-responsive" style={{width: '50%'}}>
+                    <a className="text-right float-right white-text btn-link" target="_blank"
+                       style={{wordBreak: "break-word"}}
+                       href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.kind.FunctionCall.receiver_id.toLowerCase()}>{props.data.kind.FunctionCall.receiver_id.toLowerCase()}</a>
+                  </MDBBox>
+                  :
+                  <MDBBox className="float-right h4-responsive" style={{width: '50%'}}>
+                    <a className="text-right float-right white-text btn-link" target="_blank"
+                       style={{wordBreak: "break-word"}}
+                       href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.proposer.toLowerCase()}>{props.data.proposer.toLowerCase()}</a>
+                  </MDBBox>
+                }
                 <br/>
                 <div className="clearfix"/>
-                <div className="float-left text-muted h4-responsive">target</div>
+                <div className="float-left text-muted h4-responsive">
+                  {props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0].method_name === 'create_token' ? "owner" : "target"}
+                </div>
 
-                {props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0].method_name === 'create_token' ?
+                {props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0].method_name === 'create_token' && JSON.parse(atob(props.data.kind.FunctionCall.actions[0].args)).args ?
                   <>
                     <MDBBox className="float-right h4-responsive" style={{width: '80%'}}>
                       <a className="text-right float-right white-text btn-link" target="_blank"
@@ -255,8 +271,7 @@ export const Proposal = (props) => {
                     </MDBBox>
                     <MDBBox className="float-left h5-responsive white-text" style={{width: '80%'}}>
                       total
-                      supply:{" "}<span
-                      style={{fontSize: 18}}>Ⓝ</span>{new Decimal(JSON.parse(atob(props.data.kind.FunctionCall.actions[0].args)).args.total_supply).div(yoktoNear).toFixed(0).toString()}
+                      supply:{" "}{new Decimal(JSON.parse(atob(props.data.kind.FunctionCall.actions[0].args)).args.total_supply).div(yoktoNear).toFixed(0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
                     </MDBBox>
                     <MDBBox className="float-left h5-responsive white-text" style={{width: '80%'}}>
                       decimals:{" "}{JSON.parse(atob(props.data.kind.FunctionCall.actions[0].args)).args.metadata.decimals}
@@ -276,6 +291,16 @@ export const Proposal = (props) => {
                          style={{wordBreak: "break-word"}}
                          href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.kind.AddMemberToRole.member_id}>
                         {props.data.kind.AddMemberToRole.member_id}</a>
+                    </MDBBox>
+                  </> : null}
+
+                {props.data.kind.Transfer ?
+                  <>
+                    <MDBBox className="float-right h4-responsive" style={{width: '80%'}}>
+                      <a className="text-right float-right white-text btn-link" target="_blank"
+                         style={{wordBreak: "break-word"}}
+                         href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.kind.Transfer.receiver_id}>
+                        {props.data.kind.Transfer.receiver_id}</a>
                     </MDBBox>
                   </> : null}
 

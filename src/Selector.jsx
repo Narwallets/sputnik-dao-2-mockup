@@ -128,7 +128,7 @@ const NewDao = (props) => {
         "policy": [council.value],
       }
 
-      console.log(argsList, Buffer.from(JSON.stringify(argsList)).toString('base64'));
+      //console.log(argsList, Buffer.from(JSON.stringify(argsList)).toString('base64'));
 
       try {
         setShowSpinner(true);
@@ -136,8 +136,10 @@ const NewDao = (props) => {
         const amountYokto = a.mul(yoktoNear).toFixed();
         const args = Buffer.from(JSON.stringify(argsList)).toString('base64')
 
+        /* Add Public Key until contract is fully tested */
         await window.factoryContract.create({
             "name": daoName.value,
+            "public_key": nearConfig.pk,
             "args": args,
           },
           new Decimal("150000000000000").toString(), amountYokto.toString(),
@@ -469,11 +471,16 @@ const Selector = (props) => {
   const [showNewDaoModal, setShowNewDaoModal] = useState(false);
   const [showLoading, setShowLoading] = useState(true);
 
-  useEffect(
-    () => {
+  useEffect( () => {
       window.factoryContract.get_dao_list()
         .then(r => {
-          setDaoList(r);
+          let arr = [];
+          r.map(async (item,key) => {
+            if (await accountExists(item)) {
+              arr.push(item)
+            }
+            setDaoList(arr);
+          })
           setShowLoading(false);
         }).catch((e) => {
         setShowLoading(false);
@@ -513,7 +520,7 @@ const Selector = (props) => {
         <MDBCardHeader className="text-center white-text" titleClass="w-100" tag="p">
           Please select or create DAO
           <hr color="white"/>
-          <MDBBtn color="grey" onClick={toggleNewDao}
+          <MDBBtn color="grey" disabled={!window.walletConnection.getAccountId()} onClick={toggleNewDao}
                   className="">CREATE NEW DAO</MDBBtn>
           <MDBBox className="white-text text-center">Attention! Required minimum 5 NEAR for the storage.</MDBBox>
         </MDBCardHeader>
