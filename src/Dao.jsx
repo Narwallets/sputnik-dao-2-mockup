@@ -879,13 +879,14 @@ const Dao = () => {
 
   }
 
-  console.log(proposals)
-
   return (
     <MDBView className="w-100 h-100" style={{minHeight: "100vh"}}>
       <MDBMask className="d-flex justify-content-center align-items-center unique-color-dark gradient"/>
       <Navbar/>
-      <MDBContainer style={{minHeight: "100vh"}} className="">
+      <MDBContainer style={{minHeight: "100vh"}}>
+        <MDBAlert color="danger" className="text-center">
+          Beta software. Test in prod. <b>Not audited.</b> Use at your own risk!
+        </MDBAlert>
         {stateCtx.config.contract && !selectDao ?
           <>
             <MDBRow>

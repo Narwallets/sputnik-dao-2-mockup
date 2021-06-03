@@ -137,11 +137,6 @@ export const Proposal = (props) => {
     [props.data.votes]
   )
 
-  console.log(props.data);
-
-  if (props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0].method_name === 'create_token') {
-    console.log(JSON.parse(atob(props.data.kind.FunctionCall.actions[0].args)))
-  }
 
   return (
     <>
@@ -332,7 +327,7 @@ export const Proposal = (props) => {
                 </MDBTooltip>
                 : null}
 
-              {((props.data.proposer === window.walletConnection.getAccountId() || props.council.includes(window.walletConnection.getAccountId())) && convertDuration(new Decimal(props.data.submission_time).plus(props.daoPolicy.proposal_period)) < new Date() && props.data.status === 'InProgress') ?
+              {(window.walletConnection.getAccountId() && convertDuration(new Decimal(props.data.submission_time).plus(props.daoPolicy.proposal_period)) < new Date() && props.data.status === 'InProgress') ?
                 <MDBTooltip
                   tag="span"
                   placement="top"
@@ -572,7 +567,6 @@ const ProposalPage = () => {
     [dao, proposal]
   )
 
-  console.log(proposals)
 
   return (
     <MDBView className="w-100 h-100" style={{minHeight: "100vh"}}>

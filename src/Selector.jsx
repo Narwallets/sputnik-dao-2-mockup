@@ -14,7 +14,7 @@ import {
   MDBModalBody,
   MDBModalFooter,
   MDBModalHeader,
-  MDBCol, MDBContainer, MDBRow,
+  MDBCol, MDBContainer, MDBRow, MDBAlert,
 } from "mdbreact";
 import {useGlobalMutation, useGlobalState} from './utils/container'
 import useRouter from "./utils/use-router";
@@ -381,16 +381,22 @@ const DaoInfo = (props) => {
 
   return (
     <>
-      <MDBCard className="m-2" key={props.key} color="stylish-color"
-               style={{borderTopLeftRadius: 25, borderTopRightRadius: 25}}>
+      <MDBCard className="m-3" key={props.key} color="grey darken-1"
+               style={{
+                 borderTopLeftRadius: 25,
+                 borderTopRightRadius: 25,
+                 borderBottomLeftRadius: 25,
+                 borderBottomRightRadius: 25
+               }}>
         <MDBCardHeader color="white-text stylish-color" className="h5-responsive"
                        style={{borderTopLeftRadius: 25, borderTopRightRadius: 25}}>
           <div>
-            <div className="float-left">{props.item.replace("." + nearConfig.contractName, "")}</div>
+            <div className="float-left mt-2">{props.item.replace("." + nearConfig.contractName, "")}</div>
             <div className="float-right h4-responsive">Ⓝ {daoState}</div>
           </div>
         </MDBCardHeader>
-        <MDBCardBody className="grey darken-1 white-text">
+        <MDBCardBody className="grey darken-1 white-text"
+                     style={{borderBottomLeftRadius: 25, borderBottomRightRadius: 25}}>
           <div className="text-left">
             <MDBCard color="special-color-dark" className="mx-auto mb-2">
               <MDBCardBody className="text-left">
@@ -400,28 +406,28 @@ const DaoInfo = (props) => {
             <div>
               <MDBCard color="special-color-dark" className="mx-auto">
                 <MDBCardBody className="text-left">
-                  <div className="float-left">
+                  <div className="float-left grey-text">
                     proposal bond <span style={{fontSize: 12}}>{" "}Ⓝ</span>
                   </div>
                   <div className="float-right">
                     {daoPolicy && daoPolicy.proposal_bond !== null ? (new Decimal(daoPolicy.proposal_bond.toString()).div(yoktoNear)).toString() : ''}
                   </div>
                   <div className="clearfix"/>
-                  <div className="float-left">
+                  <div className="float-left grey-text">
                     proposal period
                   </div>
                   <div className="float-right">
                     {daoPolicy && daoPolicy.proposal_period !== null ? timestampToReadable(daoPolicy.proposal_period) : ''}
                   </div>
                   <div className="clearfix"/>
-                  <div className="float-left">
+                  <div className="float-left grey-text">
                     bounty bond <span style={{fontSize: 12}}>{" "}Ⓝ</span>
                   </div>
                   <div className="float-right">
                     {daoPolicy && daoPolicy.bounty_bond !== null ? (new Decimal(daoPolicy.bounty_bond.toString()).div(yoktoNear)).toString() : ''}
                   </div>
                   <div className="clearfix"/>
-                  <div className="float-left">
+                  <div className="float-left grey-text">
                     bounty forgiveness
                   </div>
                   <div className="float-right">
@@ -431,6 +437,7 @@ const DaoInfo = (props) => {
                 </MDBCardBody>
               </MDBCard>
             </div>
+            <hr/>
             <div className="float-left">
               <MDBBtn
                 color="elegant"
@@ -468,19 +475,25 @@ const Selector = (props) => {
   const stateCtx = useGlobalState()
   const mutationCtx = useGlobalMutation()
   const [daoList, setDaoList] = useState([]);
+  const [daoListFixed, setDaoListFixed] = useState([]);
   const [showNewDaoModal, setShowNewDaoModal] = useState(false);
   const [showLoading, setShowLoading] = useState(true);
 
-  useEffect( () => {
+  useEffect(() => {
       window.factoryContract.get_dao_list()
         .then(r => {
-          let arr = [];
+          /*
+          let a = [];
           r.map(async (item,key) => {
             if (await accountExists(item)) {
-              arr.push(item)
+              console.log(item);
+              a.push(item);
             }
-            setDaoList(arr);
+            console.log(a);
+            setDaoList(a);
           })
+          */
+          setDaoList(r);
           setShowLoading(false);
         }).catch((e) => {
         setShowLoading(false);
@@ -511,7 +524,16 @@ const Selector = (props) => {
     setShowNewDaoModal(!showNewDaoModal);
   }
 
-  console.log(daoList)
+  useEffect(() => {
+      daoList.map(async (item, key) => {
+        if (await accountExists(item)) {
+          setDaoListFixed(prevState => ([...prevState, item]));
+        }
+      })
+      setShowLoading(false)
+    },
+    [daoList]
+  )
 
 
   return (
@@ -527,7 +549,7 @@ const Selector = (props) => {
         {showLoading ? <Loading/> : null}
         <MDBCardBody className="text-center">
           <MDBRow>
-            {daoList ? daoList.map((item, key) => (
+            {!showLoading && daoListFixed ? daoListFixed.map((item, key) => (
               <MDBCol lg="6" md="12">
                 <DaoInfo item={item} key={key} handleSelect={handleSelect}/>
               </MDBCol>

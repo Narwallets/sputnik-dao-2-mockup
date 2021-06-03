@@ -1,5 +1,5 @@
 export const yoktoNear = 1000000000000000000000000;
-export const proposalsReload = 600000;
+export const proposalsReload = 60000;
 export const updatesJsonUrl = 'https://raw.githubusercontent.com/zavodil/sputnik-dao-updates/master/updates.json?t=';
 
 export const timestampToReadable = (timestamp) => {

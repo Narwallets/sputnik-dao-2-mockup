@@ -18,11 +18,11 @@ const Navbar = () => {
 
   return (
     <Router>
-      <MDBNavbar color="stylish-color-dark" dark expand="md">
+      <MDBNavbar color="stylish-color-dark" dark expand="md" className="mb-2">
         <MDBNavbarBrand>
           <MDBNavLink className="white-text mr-2" to="/">
             <img className="d-inline-block" style={{filter: "brightness(0) invert(1)"}} height="30" src="https://gov.near.org/uploads/default/original/1X/7aa6fc28cbccdc2242717e8fe4c756829d90aaec.png" />
-            sputnikDAO 2 Mockup
+            sputnik v2 beta
           </MDBNavLink>
         </MDBNavbarBrand>
         <MDBNavbarToggler onClick={toggleCollapse}/>
