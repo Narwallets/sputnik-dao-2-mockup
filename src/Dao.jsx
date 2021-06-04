@@ -47,8 +47,6 @@ const Dao = () => {
   const mutationCtx = useGlobalMutation()
   const [numberProposals, setNumberProposals] = useState(0);
   const [proposals, setProposals] = useState(null);
-  const [council, setCouncil] = useState([]);
-  const [daoVotePeriod, setDaoVotePeriod] = useState(0);
   const [showError, setShowError] = useState(null);
   const [addProposalModal, setAddProposalModal] = useState(false);
   const [newProposalCouncilMember, setNewProposalCouncilMember] = useState(false);
@@ -938,7 +936,7 @@ const Dao = () => {
                                   )) : null
                                 }
                               </li>
-                              <li>Vote Period: {daoVotePeriod ? timestampToReadable(daoVotePeriod) : ''}</li>
+                              <li>Vote Period: {daoPolicy ? timestampToReadable(daoPolicy.proposal_period) : ''}</li>
                               <li>Staking Contract: {daoStaking ? daoStaking : ''}</li>
                               <li>DAO Funds: Ⓝ {daoState ? daoState : ''}</li>
                             </ul>
@@ -1047,7 +1045,7 @@ const Dao = () => {
 
                         ?
                         <Proposal dao={stateCtx.config.contract} data={item} key={item.id} id={item.id}
-                                  daoPolicy={daoPolicy} council={daoPolicy.roles[1].kind.Group}
+                                  daoPolicy={daoPolicy}
                                   setShowError={setShowError}/>
                         : null
                     }
@@ -1342,11 +1340,17 @@ const Dao = () => {
                     </div>
                   </MDBInput>
                   {daoPolicy ?
+                    <>
                     <MDBAlert color="warning">
                       You will pay a deposit of <span
                       style={{fontSize: 13}}>Ⓝ</span>{(new Decimal(daoPolicy.proposal_bond.toString()).div(yoktoNear).toFixed(2))} to
                       add this proposal!
                     </MDBAlert>
+                    <MDBAlert color="warning">
+                      Please make sure DAO has at least <span
+                      style={{fontSize: 13}}>Ⓝ</span>5 (for deposit) at the time of approval!
+                    </MDBAlert>
+                    </>
                     : null}
                   <MDBBox className="text-muted font-small ml-2">*the deposit will be refunded if proposal rejected or
                     expired.</MDBBox>
