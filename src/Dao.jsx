@@ -244,6 +244,19 @@ const Dao = () => {
   }
 
   const toggleNewToken = () => {
+    setProposalTarget({
+        value: nearConfig.tokenFactory,
+        valid: true,
+        message: "",
+      }
+    )
+    setProposalTokenOwner({
+        value: stateCtx.config.contract,
+        valid: true,
+        message: "",
+      }
+    )
+
     setNewProposalToken(!newProposalToken);
     setAddProposalModal(false);
   }
@@ -1109,7 +1122,7 @@ const Dao = () => {
               </MDBModalHeader>
               <MDBModalBody style={{background: 'rgb(213, 211, 211)'}}>
                 <MDBRow>
-                  <MDBCol className="col-12 col-md-6 col-lg-4">
+                  <MDBCol className="col-12 col-md-6 col-lg-4 mb-1">
                     <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
                       <MDBCardBody className="text-center white-text">
                         <MDBIcon icon="user-secret" size="4x"/>
@@ -1119,17 +1132,17 @@ const Dao = () => {
                       </MDBCardBody>
                     </MDBCard>
                   </MDBCol>
-                  <MDBCol className="col-12 col-md-6 col-lg-4">
+                  <MDBCol className="col-12 col-md-6 col-lg-4 mb-1">
                     <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
                       <MDBCardBody className="text-center white-text">
                         <MDBIcon icon="hand-holding-usd" size="4x"/>
                         <hr/>
                         <a href="#" onClick={toggleNewPayout}
-                           className="stretched-link grey-text white-hover">Payout</a> </MDBCardBody>
+                           className="stretched-link grey-text white-hover">Payout</a>
+                      </MDBCardBody>
                     </MDBCard>
                   </MDBCol>
-                  <MDBCol className="col-12 col-md-6 col-lg-4">
-                    <MDBLink to="#">
+                  <MDBCol className="col-12 col-md-6 col-lg-4 mb-1">
                       <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
                         <MDBCardBody className="text-center white-text">
                           <MDBIcon icon="tractor" size="4x"/>
@@ -1138,17 +1151,7 @@ const Dao = () => {
                              className="stretched-link grey-text white-hover">Token farm</a>
                         </MDBCardBody>
                       </MDBCard>
-                    </MDBLink>
-                  </MDBCol> <
-                  MDBCol className="col-12 col-md-6 col-lg-4">
-                  <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
-                    <MDBCardBody className="text-center white-text">
-                      <MDBIcon icon="tools" size="4x"/>
-                      <hr/>
-                      <MDBBox style={{fontSize: 12}} className="grey-text">Function <br/>Custom</MDBBox>
-                    </MDBCardBody>
-                  </MDBCard>
-                </MDBCol>
+                  </MDBCol>
                 </MDBRow>
               </MDBModalBody>
             </MDBModal>
@@ -1284,49 +1287,49 @@ const Dao = () => {
                     onSubmit={submitProposal}
               >
                 <MDBModalBody>
-                  <MDBInput disabled={disableTarget} name="proposalTokenOwner" value={proposalTokenOwner.value}
+                  <MDBInput disabled={true} name="proposalTokenOwner" value={proposalTokenOwner.value}
                             onChange={changeHandler} label="Enter owner account"
                             required group>
                     <div className="invalid-feedback">
                       {proposalTokenOwner.message}
                     </div>
                   </MDBInput>
-                  <MDBInput disabled={disableTarget} name="proposalTokenSupply" value={proposalTokenSupply.value}
+                  <MDBInput name="proposalTokenSupply" value={proposalTokenSupply.value}
                             onChange={changeHandler} label="Total Supply"
                             required group>
                     <div className="invalid-feedback">
                       {proposalTokenSupply.message}
                     </div>
                   </MDBInput>
-                  <MDBInput disabled={disableTarget} name="proposalTokenName" value={proposalTokenName.value}
+                  <MDBInput name="proposalTokenName" value={proposalTokenName.value}
                             onChange={changeHandler} label="Token Name"
                             required group>
                     <div className="invalid-feedback">
                       {proposalTokenName.message}
                     </div>
                   </MDBInput>
-                  <MDBInput disabled={disableTarget} name="proposalTokenSymbol" value={proposalTokenSymbol.value}
+                  <MDBInput name="proposalTokenSymbol" value={proposalTokenSymbol.value}
                             onChange={changeHandler} label="Token Symbol"
                             required group>
                     <div className="invalid-feedback">
                       {proposalTokenSymbol.message}
                     </div>
                   </MDBInput>
-                  <MDBInput disabled={disableTarget} name="proposalTokenIcon" value={proposalTokenIcon.value}
+                  <MDBInput name="proposalTokenIcon" value={proposalTokenIcon.value}
                             onChange={changeHandler} label="Token Icon URL"
                             required group>
                     <div className="invalid-feedback">
                       {proposalTokenIcon.message}
                     </div>
                   </MDBInput>
-                  <MDBInput disabled={disableTarget} name="proposalTokenDecimals" value={proposalTokenDecimals.value}
+                  <MDBInput name="proposalTokenDecimals" value={proposalTokenDecimals.value}
                             onChange={changeHandler} label="Token Decimals"
                             required group>
                     <div className="invalid-feedback">
                       {proposalTokenDecimals.message}
                     </div>
                   </MDBInput>
-                  <MDBInput disabled={disableTarget} name="proposalTarget" value={proposalTarget.value}
+                  <MDBInput disabled={true} name="proposalTarget" value={proposalTarget.value}
                             onChange={changeHandler} label="Enter receiver account"
                             group>
                     <div className="invalid-feedback">
@@ -1341,15 +1344,15 @@ const Dao = () => {
                   </MDBInput>
                   {daoPolicy ?
                     <>
-                    <MDBAlert color="warning">
-                      You will pay a deposit of <span
-                      style={{fontSize: 13}}>Ⓝ</span>{(new Decimal(daoPolicy.proposal_bond.toString()).div(yoktoNear).toFixed(2))} to
-                      add this proposal!
-                    </MDBAlert>
-                    <MDBAlert color="warning">
-                      Please make sure DAO has at least <span
-                      style={{fontSize: 13}}>Ⓝ</span>5 (for deposit) at the time of approval!
-                    </MDBAlert>
+                      <MDBAlert color="warning">
+                        You will pay a deposit of <span
+                        style={{fontSize: 13}}>Ⓝ</span>{(new Decimal(daoPolicy.proposal_bond.toString()).div(yoktoNear).toFixed(2))} to
+                        add this proposal!
+                      </MDBAlert>
+                      <MDBAlert color="warning">
+                        Please make sure DAO has at least <span
+                        style={{fontSize: 13}}>Ⓝ</span>5 (for deposit) at the time of approval!
+                      </MDBAlert>
                     </>
                     : null}
                   <MDBBox className="text-muted font-small ml-2">*the deposit will be refunded if proposal rejected or

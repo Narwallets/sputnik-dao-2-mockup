@@ -482,17 +482,6 @@ const Selector = (props) => {
   useEffect(() => {
       window.factoryContract.get_dao_list()
         .then(r => {
-          /*
-          let a = [];
-          r.map(async (item,key) => {
-            if (await accountExists(item)) {
-              console.log(item);
-              a.push(item);
-            }
-            console.log(a);
-            setDaoList(a);
-          })
-          */
           setDaoList(r);
           setShowLoading(false);
         }).catch((e) => {
@@ -526,8 +515,9 @@ const Selector = (props) => {
 
   useEffect(() => {
       daoList.map(async (item, key) => {
+        console.log(key)
         if (await accountExists(item)) {
-          setDaoListFixed(prevState => ([...prevState, item]));
+          setDaoListFixed(prevState => ([...prevState, {key: key, dao: item}]));
         }
       })
       setShowLoading(false)
@@ -549,9 +539,9 @@ const Selector = (props) => {
         {showLoading ? <Loading/> : null}
         <MDBCardBody className="text-center">
           <MDBRow>
-            {!showLoading && daoListFixed ? daoListFixed.map((item, key) => (
+            {!showLoading && daoListFixed ? daoListFixed.sort((b, a) => b.key >= a.key ? 1 : -1).map((item, key) => (
               <MDBCol lg="6" md="12">
-                <DaoInfo item={item} key={key} handleSelect={handleSelect}/>
+                <DaoInfo item={item.dao} key={key.key} handleSelect={handleSelect}/>
               </MDBCol>
             )) : null}
           </MDBRow>
