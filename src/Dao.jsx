@@ -427,7 +427,7 @@ const Dao = () => {
       case "proposalTokenIcon":
         return validateString(field, value, showMessage.bind(this));
       case "proposalTokenDecimals":
-        return validateString(field, value, showMessage.bind(this));
+        return validateNumber(field, value, showMessage.bind(this));
       case "proposalDiscussion":
         return validateProposalDiscussion(field, value, showMessage.bind(this));
       case "proposalAmount":
@@ -812,27 +812,31 @@ const Dao = () => {
     {/* --------------------------------------------------------------------------------------------------- */
     }
     if (e.target.name === 'newProposalToken') {
-      const nearAccountValid = await accountExists(proposalTarget.value);
-      let validateTarget = validateField("proposalTarget", proposalTarget.value);
       let validateDescription = validateField("proposalDescription", proposalDescription.value);
-      const supply = new Decimal(e.target.proposalTokenSupply.value.trim()).toFixed(0);
+      let validateTokenDecimals = validateField("proposalTokenDecimals", proposalTokenDecimals.value);
+      let validateTokenSupply = validateField("proposalTokenSupply", proposalTokenSupply.value);
+      let validateTokenName = validateField("proposalTokenName", proposalTokenName.value);
+      let validateTokenSymbol = validateField("proposalTokenSymbol", proposalTokenSymbol.value);
 
-      const argsList = {
-        args: {
-          owner_id: e.target.proposalTokenOwner.value.trim(),
-          total_supply: supply,
-          metadata: {
-            spec: "ft-1.0.0",
-            name: e.target.proposalTokenName.value.trim(),
-            symbol: e.target.proposalTokenSymbol.value.trim(),
-            icon: e.target.proposalTokenIcon.value.trim(),
-            decimals: '^' + e.target.proposalTokenDecimals.value + '^',
+
+
+      if (validateDescription && validateTokenDecimals && validateTokenName && validateTokenSupply && validateTokenSymbol) {
+        const supply = new Decimal(e.target.proposalTokenSupply.value.trim()).toFixed(0);
+        const argsList = {
+          args: {
+            owner_id: e.target.proposalTokenOwner.value.trim(),
+            total_supply: supply,
+            metadata: {
+              spec: "ft-1.0.0",
+              name: e.target.proposalTokenName.value.trim(),
+              symbol: e.target.proposalTokenSymbol.value.trim(),
+              icon: e.target.proposalTokenIcon.value.trim(),
+              decimals: '^' + e.target.proposalTokenDecimals.value + '^',
+            },
           },
-        },
-      }
-      const args = Buffer.from(JSON.stringify(argsList).replaceAll('^"', '').replaceAll('"^', '')).toString('base64')
+        }
+        const args = Buffer.from(JSON.stringify(argsList).replaceAll('^"', '').replaceAll('"^', '')).toString('base64')
 
-      if (validateTarget && nearAccountValid && validateDescription) {
         try {
           setShowSpinner(true);
           await window.contract.add_proposal({
@@ -859,72 +863,50 @@ const Dao = () => {
         } finally {
           setShowSpinner(false);
         }
+      } else {
+
+        if (!validateDescription) {
+          e.target.proposalDescription.className += " is-invalid";
+          e.target.proposalDescription.classList.remove("is-valid");
+        } else {
+          e.target.proposalDescription.classList.remove("is-invalid");
+          e.target.proposalDescription.className += " is-valid";
+        }
+
+        if (!validateTokenName) {
+          e.target.proposalTokenName.className += " is-invalid";
+          e.target.proposalTokenName.classList.remove("is-valid");
+        } else {
+          e.target.proposalTokenName.classList.remove("is-invalid");
+          e.target.proposalTokenName.className += " is-valid";
+        }
+
+        if (!validateTokenSymbol) {
+          e.target.proposalTokenSymbol.className += " is-invalid";
+          e.target.proposalTokenSymbol.classList.remove("is-valid");
+        } else {
+          e.target.proposalTokenSymbol.classList.remove("is-invalid");
+          e.target.proposalTokenSymbol.className += " is-valid";
+        }
+
+        if (!validateTokenSupply) {
+          e.target.proposalTokenSupply.className += " is-invalid";
+          e.target.proposalTokenSupply.classList.remove("is-valid");
+        } else {
+          e.target.proposalTokenSupply.classList.remove("is-invalid");
+          e.target.proposalTokenSupply.className += " is-valid";
+        }
+
+        if (!validateTokenDecimals) {
+          e.target.proposalTokenDecimals.className += " is-invalid";
+          e.target.proposalTokenDecimals.classList.remove("is-valid");
+        } else {
+          e.target.proposalTokenDecimals.classList.remove("is-invalid");
+          e.target.proposalTokenDecimals.className += " is-valid";
+        }
+
       }
     }
-
-    /*
-    const nearAccountValid = await accountExists(proposalTarget.value);
-    let validateTarget = validateField("proposalTarget", proposalTarget.value);
-    let validateDescription = validateField("proposalDescription", proposalDescription.value);
-    //let validateDiscussion = validateField("proposalDiscussion", proposalDiscussion.value);
-    let validateChangePurpose = validateField("changePurpose", changePurpose.value);
-    let validateAmount = validateField("proposalAmount", proposalAmount.value);
-
-
-    if (showChangePurpose) {
-      if (!validateChangePurpose) {
-        e.target.changePurpose.className += " is-invalid";
-        e.target.changePurpose.classList.remove("is-valid");
-      } else {
-        e.target.changePurpose.classList.remove("is-invalid");
-        e.target.changePurpose.className += " is-valid";
-      }
-    }*/
-
-
-    /*
-        if (showPayout) {
-          if (!validateAmount) {
-            e.target.proposalAmount.className += " is-invalid";
-            e.target.proposalAmount.classList.remove("is-valid");
-          } else {
-            e.target.proposalAmount.classList.remove("is-invalid");
-            e.target.proposalAmount.className += " is-valid";
-          }
-        }
-
-        const parseForum = parseForumUrl(e.target.proposalDiscussion.value);
-
-        if (showPayout) {
-          if (e.target.proposalKind.value !== 'false' && nearAccountValid && validateTarget && validateDescription && validateAmount && validateDiscussion) {
-            try {
-              setShowSpinner(true);
-              const amount = new Decimal(e.target.proposalAmount.value);
-              const amountYokto = amount.mul(yoktoNear).toFixed();
-
-              await window.contract.add_proposal({
-                  proposal: {
-                    target: e.target.proposalTarget.value,
-                    description: (e.target.proposalDescription.value + " " + parseForum).trim(),
-                    kind: {
-                      type: e.target.proposalKind.value,
-                      amount: amountYokto,
-                    }
-                  },
-                },
-                new Decimal("30000000000000").toString(), bond.toString(),
-              )
-
-            } catch (e) {
-              console.log(e);
-              setShowError(e);
-            } finally {
-              setShowSpinner(false);
-            }
-          }
-        }
-
-         */
 
 
   }
