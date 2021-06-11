@@ -50,6 +50,7 @@ const Dao = () => {
   const [showError, setShowError] = useState(null);
   const [addProposalModal, setAddProposalModal] = useState(false);
   const [newProposalCouncilMember, setNewProposalCouncilMember] = useState(false);
+  const [removeProposalCouncilMember, setRemoveProposalCouncilMember] = useState(false);
   const [newProposalPayout, setNewProposalPayout] = useState(false);
   const [newProposalToken, setNewProposalToken] = useState(false);
   const [selectDao, setSelectDao] = useState(false);
@@ -238,6 +239,11 @@ const Dao = () => {
     setAddProposalModal(false);
   }
 
+  const toggleRemoveCouncilMember = () => {
+    setRemoveProposalCouncilMember(!removeProposalCouncilMember);
+    setAddProposalModal(false);
+  }
+
   const toggleNewPayout = () => {
     setNewProposalPayout(!newProposalPayout);
     setAddProposalModal(false);
@@ -372,7 +378,6 @@ const Dao = () => {
     }
   }
 
-
   const validateProposalDiscussion = (field, name, showMessage) => {
     let categories = parseForumUrl(name);
     /* Hardcoded exclusion of rucommunity.sputnikdao.near from field validation */
@@ -429,50 +434,6 @@ const Dao = () => {
       case "votePeriod":
         return validateNumber(field, value, showMessage.bind(this));
     }
-  };
-
-  const changeSelectHandler = (event) => {
-    if (event.target.value === "NewCouncil" || event.target.value === "RemoveCouncil") {
-      setShowCouncilChange(true)
-      setShowPayout(false)
-      setShowChangePurpose(false)
-      setShowVotePeriod(false)
-      setDisableTarget(false)
-      setProposalTarget({value: '', valid: true, message: ''});
-    }
-
-    if (event.target.value === "ChangeVotePeriod") {
-      setShowVotePeriod(true)
-      setShowPayout(false)
-      setShowChangePurpose(false)
-      setShowCouncilChange(false)
-      setProposalTarget({value: window.walletConnection.getAccountId(), valid: true, message: ''});
-      setDisableTarget(true)
-    }
-
-    if (event.target.value === "ChangePurpose") {
-      setShowChangePurpose(true)
-      setShowPayout(false)
-      setShowVotePeriod(false)
-      setShowCouncilChange(false)
-      setProposalTarget({value: window.walletConnection.getAccountId(), valid: true, message: ''});
-      setDisableTarget(true)
-    }
-
-    if (event.target.value === "Payout") {
-      setShowPayout(true)
-      setShowChangePurpose(false)
-      setShowVotePeriod(false)
-      setShowCouncilChange(false)
-      setDisableTarget(false)
-      setProposalTarget({value: '', valid: true, message: ''});
-    }
-
-
-    if (event.target.name === "proposalKind") {
-      setProposalKind({value: event.target.value, valid: !!event.target.value});
-    }
-
   };
 
   const changeHandler = (event) => {
@@ -705,10 +666,9 @@ const Dao = () => {
     }
     if (e.target.name === 'newProposalCouncilMember') {
       const nearAccountValid = await accountExists(proposalTarget.value);
-      let validateTarget = validateField("proposalTarget", proposalTarget.value);
       let validateDescription = validateField("proposalDescription", proposalDescription.value);
 
-      if (validateTarget && nearAccountValid && validateDescription) {
+      if (nearAccountValid && validateDescription) {
         try {
           setShowSpinner(true);
           await window.contract.add_proposal({
@@ -730,7 +690,81 @@ const Dao = () => {
         } finally {
           setShowSpinner(false);
         }
+      } else {
+
+        if (!nearAccountValid) {
+          e.target.proposalTarget.className += " is-invalid";
+          e.target.proposalTarget.classList.remove("is-valid");
+          setProposalTarget({value: proposalTarget.value, valid: false, message: 'user account does not exist!'});
+        } else {
+          setProposalTarget({value: proposalTarget.value, valid: true, message: ''});
+          e.target.proposalTarget.classList.remove("is-invalid");
+          e.target.proposalTarget.className += " is-valid";
+        }
+
+        if (!validateDescription) {
+          e.target.proposalDescription.className += " is-invalid";
+          e.target.proposalDescription.classList.remove("is-valid");
+        } else {
+          e.target.proposalDescription.classList.remove("is-invalid");
+          e.target.proposalDescription.className += " is-valid";
+        }
       }
+    }
+
+
+    {/* --------------------------------------------------------------------------------------------------- */
+    }
+    {/* --------------------------------------- Remove council member ---------------------------------------- */
+    }
+    {/* --------------------------------------------------------------------------------------------------- */
+    }
+    if (e.target.name === 'removeProposalCouncilMember') {
+      const councilAccountValid = daoPolicy.roles[1].kind.Group.includes(proposalTarget.value)
+      let validateDescription = validateField("proposalDescription", proposalDescription.value);
+
+      if (councilAccountValid && validateDescription) {
+        try {
+          setShowSpinner(true);
+          await window.contract.add_proposal({
+              proposal: {
+                description: (e.target.proposalDescription.value).trim(),
+                kind: {
+                  RemoveMemberFromRole: {
+                    member_id: e.target.proposalTarget.value,
+                    role: "council"
+                  }
+                }
+              },
+            },
+            new Decimal("30000000000000").toString(), daoPolicy.proposal_bond.toString(),
+          )
+        } catch (e) {
+          console.log(e);
+          setShowError(e);
+        } finally {
+          setShowSpinner(false);
+        }
+      } else {
+        if (!councilAccountValid) {
+          e.target.proposalTarget.className += " is-invalid";
+          e.target.proposalTarget.classList.remove("is-valid");
+          setProposalTarget({value: proposalTarget.value, valid: false, message: 'user account is not in council!'});
+        } else {
+          setProposalTarget({value: proposalTarget.value, valid: true, message: ''});
+          e.target.proposalTarget.classList.remove("is-invalid");
+          e.target.proposalTarget.className += " is-valid";
+        }
+
+        if (!validateDescription) {
+          e.target.proposalDescription.className += " is-invalid";
+          e.target.proposalDescription.classList.remove("is-valid");
+        } else {
+          e.target.proposalDescription.classList.remove("is-invalid");
+          e.target.proposalDescription.className += " is-valid";
+        }
+      }
+
     }
 
     {/* --------------------------------------------------------------------------------------------------- */
@@ -778,12 +812,10 @@ const Dao = () => {
     {/* --------------------------------------------------------------------------------------------------- */
     }
     if (e.target.name === 'newProposalToken') {
-      const stringifyObject = require('stringify-object');
       const nearAccountValid = await accountExists(proposalTarget.value);
       let validateTarget = validateField("proposalTarget", proposalTarget.value);
       let validateDescription = validateField("proposalDescription", proposalDescription.value);
       const supply = new Decimal(e.target.proposalTokenSupply.value.trim()).toFixed(0);
-      //const supplyYokto = supply.mul(yoktoNear).toFixed();
 
       const argsList = {
         args: {
@@ -1124,48 +1156,55 @@ const Dao = () => {
                 />
                 : null
               }
-              <MDBModal isOpen={addProposalModal} toggle={toggleProposalModal} centered position="center" size="lg">
-                <MDBModalHeader className="text-center stylish-color white-text border-dark"
-                                titleClass="w-100 font-weight-bold"
-                                toggle={toggleProposalModal}>
-                  Select Proposal Type
-                </MDBModalHeader>
-                <MDBModalBody style={{background: 'rgb(213, 211, 211)'}}>
-                  <MDBRow>
-                    <MDBCol className="col-12 col-md-6 col-lg-4 mb-1">
-                      <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
-                        <MDBCardBody className="text-center white-text">
-                          <MDBIcon icon="user-secret" size="4x"/>
-                          <hr/>
-                          <a href="#" onClick={toggleNewCouncilMember}
-                             className="stretched-link grey-text white-hover">Council
-                            Member</a>
-                        </MDBCardBody>
-                      </MDBCard>
-                    </MDBCol>
-                    <MDBCol className="col-12 col-md-6 col-lg-4 mb-1">
-                      <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
-                        <MDBCardBody className="text-center white-text">
-                          <MDBIcon icon="hand-holding-usd" size="4x"/>
-                          <hr/>
-                          <a href="#" onClick={toggleNewPayout}
-                             className="stretched-link grey-text white-hover">Payout</a>
-                        </MDBCardBody>
-                      </MDBCard>
-                    </MDBCol>
-                    <MDBCol className="col-12 col-md-6 col-lg-4 mb-1">
-                      <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
-                        <MDBCardBody className="text-center white-text">
-                          <MDBIcon icon="tractor" size="4x"/>
-                          <hr/>
-                          <a href="#" onClick={toggleNewToken}
-                             className="stretched-link grey-text white-hover">Token farm</a>
-                        </MDBCardBody>
-                      </MDBCard>
-                    </MDBCol>
-                  </MDBRow>
-                </MDBModalBody>
-              </MDBModal>
+              {daoPolicy ?
+                <MDBModal isOpen={addProposalModal} toggle={toggleProposalModal} centered position="center" size="lg">
+                  <MDBModalHeader className="text-center stylish-color white-text border-dark"
+                                  titleClass="w-100 font-weight-bold"
+                                  toggle={toggleProposalModal}>
+                    Select Proposal Type
+                  </MDBModalHeader>
+                  <MDBModalBody style={{background: 'rgb(213, 211, 211)'}}>
+                    <MDBRow>
+                      <MDBCol className="col-12 col-md-6 col-lg-5 mb-1">
+                        <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
+                          <MDBCardBody className="text-center white-text">
+                            <MDBIcon icon="user-secret" size="4x"/>
+                            <hr/>
+                            <div>Council
+                              Member
+                            </div>
+                            <MDBBtn onClick={toggleNewCouncilMember}
+                                    color="blue-grey" size="sm" className="float-left">Add</MDBBtn>
+                            <MDBBtn disabled={daoPolicy.roles[1].kind.Group.length < 2}
+                                    onClick={toggleRemoveCouncilMember} color="red" size="sm"
+                                    className="float-right">Remove</MDBBtn>
+                          </MDBCardBody>
+                        </MDBCard>
+                      </MDBCol>
+                      <MDBCol className="col-12 col-md-6 col-lg-4 mb-1">
+                        <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
+                          <MDBCardBody className="text-center white-text">
+                            <MDBIcon icon="hand-holding-usd" size="4x"/>
+                            <hr/>
+                            <a href="#" onClick={toggleNewPayout}
+                               className="stretched-link grey-text white-hover">Payout</a>
+                          </MDBCardBody>
+                        </MDBCard>
+                      </MDBCol>
+                      <MDBCol className="col-12 col-md-6 col-lg-4 mb-1">
+                        <MDBCard className="p-md-3 m-md-3 stylish-color-dark">
+                          <MDBCardBody className="text-center white-text">
+                            <MDBIcon icon="tractor" size="4x"/>
+                            <hr/>
+                            <a href="#" onClick={toggleNewToken}
+                               className="stretched-link grey-text white-hover">Token farm</a>
+                          </MDBCardBody>
+                        </MDBCard>
+                      </MDBCol>
+                    </MDBRow>
+                  </MDBModalBody>
+                </MDBModal>
+                : null}
 
 
               {/* --------------------------------------------------------------------------------------------------- */}
@@ -1180,6 +1219,62 @@ const Dao = () => {
                 </MDBModalHeader>
                 <form className="needs-validation mx-3 grey-text"
                       name="newProposalCouncilMember"
+                      noValidate
+                      method="post"
+                      onSubmit={submitProposal}
+                >
+                  <MDBModalBody>
+                    <MDBInput disabled={disableTarget} name="proposalTarget" value={proposalTarget.value}
+                              onChange={changeHandler} label="Enter account"
+                              required group>
+                      <div className="invalid-feedback">
+                        {proposalTarget.message}
+                      </div>
+                    </MDBInput>
+                    <MDBInput name="proposalDescription" value={proposalDescription.value} onChange={changeHandler}
+                              required label="Enter description" group>
+                      <div className="invalid-feedback">
+                        {proposalDescription.message}
+                      </div>
+                    </MDBInput>
+                    {daoPolicy ?
+                      <MDBAlert color="warning">
+                        You will pay a deposit of <span
+                        style={{fontSize: 13}}>Ⓝ</span>{(new Decimal(daoPolicy.proposal_bond.toString()).div(yoktoNear).toFixed(2))} to
+                        add this proposal!
+                      </MDBAlert>
+                      : null}
+                    <MDBBox className="text-muted font-small ml-2">*the deposit will be refunded if proposal rejected
+                      or
+                      expired.</MDBBox>
+                  </MDBModalBody>
+                  <MDBModalFooter className="justify-content-center">
+                    <MDBBtn color="elegant" type="submit">
+                      Submit
+                      {showSpinner ?
+                        <div className="spinner-border spinner-border-sm ml-2" role="status">
+                          <span className="sr-only">Loading...</span>
+                        </div>
+                        : null}
+                    </MDBBtn>
+                  </MDBModalFooter>
+                </form>
+              </MDBModal>
+
+
+              {/* --------------------------------------------------------------------------------------------------- */}
+              {/* --------------------------------------- Remove council member ---------------------------------------- */}
+              {/* --------------------------------------------------------------------------------------------------- */}
+              <MDBModal isOpen={removeProposalCouncilMember} toggle={toggleRemoveCouncilMember} centered
+                        position="center"
+                        size="lg">
+                <MDBModalHeader className="text-center stylish-color white-text border-dark"
+                                titleClass="w-100 font-weight-bold"
+                                toggle={toggleRemoveCouncilMember}>
+                  Remove Council Member
+                </MDBModalHeader>
+                <form className="needs-validation mx-3 grey-text"
+                      name="removeProposalCouncilMember"
                       noValidate
                       method="post"
                       onSubmit={submitProposal}

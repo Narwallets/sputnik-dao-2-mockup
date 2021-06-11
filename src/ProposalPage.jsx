@@ -168,8 +168,8 @@ export const Proposal = (props) => {
               {props.data.kind === 'ChangeConfig' ? "Change Config: " : null}
               {props.data.kind === 'ChangePolicy' ? "Change Policy: " : null}
               {props.data.kind.AddMemberToRole && props.data.kind.AddMemberToRole.role === 'council' ? "Add " + props.data.kind.AddMemberToRole.member_id + " to the council" : null}
+              {props.data.kind.RemoveMemberFromRole && props.data.kind.RemoveMemberFromRole.role === 'council' ? "Remove " + props.data.kind.RemoveMemberFromRole.member_id + " from the council" : null}
               {props.data.kind.Transfer ? "Request for payout Ⓝ" + (props.data.kind.Transfer.amount / yoktoNear).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " to " + props.data.kind.Transfer.receiver_id : null}
-              {props.data.kind === 'RemoveMemberFromRole' ? "RemoveMemberFromRole: " + props.data.target : null}
               {props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0].method_name === 'create_token' ? "Create token" : null}
               {props.data.kind === 'UpgradeSelf' ? "UpgradeSelf: " + props.data.target : null}
               {props.data.kind === 'UpgradeRemote' ? "UpgradeRemote: " + props.data.target : null}
@@ -198,9 +198,9 @@ export const Proposal = (props) => {
             <MDBCardBody className="white-text">
               <div className="float-left">
                 {jsonError ?
-                  <MDBAlert color="danger" className="font-small text-center">This proposal is created with an incorrect data, please consider removing and create a new one</MDBAlert>
+                  <MDBAlert color="danger" className="font-small text-center">This proposal is created with an incorrect data, please consider removing and creating a new one</MDBAlert>
                 : null}
-                {props.data.kind.AddMemberToRole ?
+                {props.data.kind.AddMemberToRole || props.data.kind.RemoveMemberFromRole ?
                   <MDBIcon icon="user-secret" className="white-text mr-2 d-inline-block" size="2x"/> : null}
 
                 {props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0].method_name === 'create_token' ?
@@ -299,6 +299,16 @@ export const Proposal = (props) => {
                          style={{wordBreak: "break-word"}}
                          href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.kind.AddMemberToRole.member_id}>
                         {props.data.kind.AddMemberToRole.member_id}</a>
+                    </MDBBox>
+                  </> : null}
+
+                {props.data.kind.RemoveMemberFromRole ?
+                  <>
+                    <MDBBox className="float-right h4-responsive" style={{width: '80%'}}>
+                      <a className="text-right float-right white-text btn-link" target="_blank"
+                         style={{wordBreak: "break-word"}}
+                         href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.kind.RemoveMemberFromRole.member_id}>
+                        {props.data.kind.RemoveMemberFromRole.member_id}</a>
                     </MDBBox>
                   </> : null}
 
