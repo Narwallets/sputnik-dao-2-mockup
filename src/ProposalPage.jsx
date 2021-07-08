@@ -208,6 +208,12 @@ export const Proposal = (props) => {
                 {props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0].method_name === 'create_token' ?
                   <MDBIcon icon="tractor" className="white-text mr-2 d-inline-block" size="2x"/> : null}
 
+                {props.data.kind.FunctionCall && props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0].method_name !== 'create_token'?
+                  <MDBIcon icon="cogs" className="white-text mr-2 d-inline-block" size="2x"/> : null}
+
+                {props.data.kind.Transfer ?
+                  <MDBIcon icon="money-check-alt" className="white-text mr-2 d-inline-block" size="2x"/> : null}
+
                 {props.data.status === 'Rejected' ?
                   <MDBBadge color="danger">Rejected</MDBBadge>
                   :
@@ -270,6 +276,18 @@ export const Proposal = (props) => {
                 <div className="float-left text-muted h4-responsive">
                   {props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0].method_name === 'create_token' ? "owner" : "target"}
                 </div>
+
+
+                {!jsonError && props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0].method_name !== 'create_token' && props.data.kind.FunctionCall.actions[0] && atob(props.data.kind.FunctionCall.actions[0].args) ?
+                  <>
+                    <MDBBox className="float-right h4-responsive" style={{width: '80%'}}>
+                      <a className="text-right float-right white-text btn-link" target="_blank"
+                         style={{wordBreak: "break-word"}}
+                         href={stateCtx.config.network.explorerUrl + "/accounts/" + props.data.kind.FunctionCall.receiver_id}>
+                        {props.data.kind.FunctionCall.receiver_id}</a>
+                    </MDBBox>
+                  </>
+                  : null}
 
                 {!jsonError && props.data.kind.FunctionCall && props.data.kind.FunctionCall.actions[0].method_name === 'create_token' && JSON.parse(atob(props.data.kind.FunctionCall.actions[0].args)).args ?
                   <>
@@ -360,7 +378,7 @@ export const Proposal = (props) => {
                       method
                     </div>
                     <MDBBox className="float-right h4-responsive white-text">
-                        <samp className="font-small">{props.data.kind.FunctionCall.actions[0].method_name}</samp>
+                      <samp className="font-small">{props.data.kind.FunctionCall.actions[0].method_name}</samp>
                     </MDBBox>
                     <br/>
                     <div className="clearfix"/>
@@ -369,7 +387,8 @@ export const Proposal = (props) => {
                     </div>
                     <MDBBox className="float-right h4-responsive white-text">
                       <MDBCard style={{maxWidth: 500}}>
-                        <ReactJson displayDataTypes={false} displayArrayKey={false} name={false} theme="tomorrow"
+                        <ReactJson collapsed={true} displayDataTypes={false} displayArrayKey={false} name={false}
+                                   theme="tomorrow"
                                    src={JSON.parse(atob(props.data.kind.FunctionCall.actions[0].args))}/>
                       </MDBCard>
                     </MDBBox>
