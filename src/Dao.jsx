@@ -559,7 +559,7 @@ const Dao = () => {
 
     if (event.target.name === "proposalCustomArgs") {
       setProposalCustomArgs({
-        value: event.target.value.toLowerCase(),
+        value: event.target.value,
         valid: !!event.target.value,
         message: proposalCustomArgs.message
       });
