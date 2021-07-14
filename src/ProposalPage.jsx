@@ -388,7 +388,7 @@ export const Proposal = (props) => {
                     <MDBBox className="float-right h4-responsive white-text">
                       <MDBCard style={{maxWidth: 500}}>
                         <ReactJson collapsed={true} displayDataTypes={false} displayArrayKey={false} name={false}
-                                   theme="tomorrow"
+                                   theme="tomorrow" style={{wordBreak: 'break-all'}}
                                    src={JSON.parse(atob(props.data.kind.FunctionCall.actions[0].args))}/>
                       </MDBCard>
                     </MDBBox>
