@@ -491,7 +491,7 @@ const Dao = () => {
       case "proposalCustomMethodName":
         return validateString(field, value, showMessage.bind(this));
       case "proposalCustomDeposit":
-        return validateDecimals(field, value, showMessage.bind(this));
+        return validateNumber(field, value, showMessage.bind(this));
       case "proposalCustomArgs":
         return validateLongString(field, value, showMessage.bind(this));
       case "proposalDiscussion":
